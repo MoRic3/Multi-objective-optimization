@@ -6,6 +6,8 @@ Created on Thu Jun 27 16:31:32 2024
 @author: moritz
 """
 
+import sys
+
 from pyomo.environ import *
 from rounding_routines import *
 
@@ -71,8 +73,14 @@ def compute_overest_error(call_model, cons, var_list, info):
     # solve the model and catch optimal value
     opt = SolverFactory('scip')
     results = opt.solve(small_model, tee=False)
-    overest_error = -small_model.objective()
-    overest_error = rounding_upper(overest_error,5)
+    
+    try:
+        overest_error = -small_model.objective()
+        overest_error = rounding_upper(overest_error,5)
+    
+    except:
+        print('not able to compute solution for overest error')
+        sys.exit(1)
     
     return overest_error 
     

@@ -286,7 +286,9 @@ def compute_enclosure(call_model, parameter, options):
 
     end_time = time.time()
     total_time = end_time - start_time
-
+    encl_dict['total_time'] = total_time
+    encl_dict['width'] = width
+    
     if show_plots:
 
         if not solve_direct:

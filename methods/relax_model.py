@@ -85,6 +85,18 @@ def relax_model(model, call_model, info):
         # introduce relaxation for each box
         i = 0
         for b in boxes:
+            
+            # check if box is reasonable
+            delete_box = False
+            for v in vars:
+                if 'discrete' in info['bounds'][v.name]:
+                    if np.ceil(info[c.name][b][v.name][0]) > np.floor(info[c.name][b][v.name][1]):
+                        delete_box = True
+                        break
+            if delete_box:
+                del info[c.name][b]
+                continue
+            
             # check if calculations for box need to be done
             if 'weight' not in info[c.name][b].keys():
                 info[c.name][b] = calculate_box_info(c,
@@ -172,6 +184,17 @@ def relax_model(model, call_model, info):
         # introduce relaxation for each box
         i = 0
         for b in boxes:
+            # check if box is reasonable
+            delete_box = False
+            for v in vars:
+                if 'discrete' in info['bounds'][v.name]:
+                    if np.ceil(info[o.name][b][v.name][0]) > np.floor(info[o.name][b][v.name][1]):
+                        delete_box = True
+                        break
+            if delete_box:
+                del info[o.name][b]
+                continue
+            
             # check if calculations for box need to be done
             if 'overest_error' not in info[o.name][b].keys():
                 info[o.name][b] = calculate_box_info_objective(o, 

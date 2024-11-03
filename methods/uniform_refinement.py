@@ -8,6 +8,7 @@ Created on Mon Jul  1 10:17:49 2024
 
 import copy as cp
 import numpy as np
+import sys
 
 def uniform_refinement_procedure(info, rel_errors, options):
     """
@@ -65,10 +66,19 @@ def uniform_refinement_procedure(info, rel_errors, options):
                 None
             
             # check for discrete variables that should not be bisected anymore
-            for v in vars:
+            delete_box = False
+            vars_check = cp.deepcopy(vars)
+            for v in vars_check:
                 if 'discrete' in info['bounds'][v]:
                     if np.ceil(info[c][b][v][0]) == np.floor(info[c][b][v][1]):
                         vars.remove(v)
+                    elif np.ceil(info[c][b][v][0]) > np.floor(info[c][b][v][1]):
+                        delete_box = True
+                        break
+            
+            if delete_box:
+                del info[c][b]
+                continue
             
             # find longest edge of box
             max_var = None
@@ -96,12 +106,21 @@ def uniform_refinement_procedure(info, rel_errors, options):
                 
                 # build new boxes
                 info[c][b+'0'] = cp.deepcopy(info[c][b])
-                info[c][b+'0'][max_var][1] = info[c][b][max_var][0] + max_len/2
+                if 'discrete' in info['bounds'][max_var]:
+                    info[c][b+'0'][max_var][1] = np.floor(info[c][b][max_var][0] + max_len/2)
+                    
+                else:
+                    info[c][b+'0'][max_var][1] = info[c][b][max_var][0] + max_len/2
                 
                 info[c][b+'1'] = cp.deepcopy(info[c][b])
-                info[c][b+'1'][max_var][0] = info[c][b][max_var][0] + max_len/2
+                if 'discrete' in info['bounds'][max_var]:
+                    info[c][b+'1'][max_var][0] = np.ceil(info[c][b][max_var][0] + max_len/2)
+                
+                else:
+                    info[c][b+'1'][max_var][0] = info[c][b][max_var][0] + max_len/2
                 
                 del info[c][b]
+            
     
     return info
                 
